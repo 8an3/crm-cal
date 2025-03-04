@@ -1,0 +1,163 @@
+{
+    "editor.scrollBeyondLastLine": false,
+    "eslint.workingDirectories": [
+        {
+            "mode": "auto"
+        }
+    ],
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "search.exclude": {
+        "build/**": true,
+        "node_modules/**": true,
+        "apps/api/node_modules/**": true,
+        "apps/app/node_modules/**": true,
+        "apps/builder/node_modules/**": true,
+        "apps/developer/node_modules/**": true,
+        "apps/storefront/node_modules/**": true,
+        "packages/auth-session/node_modules/**": true,
+        "packages/ui/node_modules/**": true,
+        "packages/navmenu/node_modules/**": true,
+        "packages/database/node_modules/**": true,
+        "packages/logger/node_modules/**": true,
+        "packages/config-tailwind/node_modules/**": true,
+        "packages/config-eslint/node_modules/**": true,
+        "packages/jet-presets/node_modules/**": true,
+    },
+    "editor.formatOnSave": false,
+    "workbench.colorCustomizations": {
+        // Activity Bar
+        "activityBar.activeBackground": "${env:BG}",
+        "activityBar.background": "#6D28D9", // Purple
+        "activityBar.foreground": "#FFFFFF",
+        "activityBar.inactiveForeground": "#FFFFFF99",
+        "activityBarBadge.background": "#14B8A6", // Teal
+        "activityBarBadge.foreground": "#0F172A", // Dark Blue
+        // Command Center
+        "commandCenter.border": "#FFFFFF99",
+        // Sash
+        "sash.hoverBorder": "#6D28D9", // Purple
+        // Status Bar
+        "statusBar.background": "#4C1D95", // Dark Purple
+        "statusBar.foreground": "#FFFFFF",
+        "statusBarItem.hoverBackground": "#6D28D9", // Purple
+        "statusBarItem.remoteBackground": "#4C1D95", // Dark Purple
+        "statusBarItem.remoteForeground": "#FFFFFF",
+        // Title Bar
+        "titleBar.activeBackground": "#4C1D95", // Dark Purple
+        "titleBar.activeForeground": "#FFFFFF",
+        "titleBar.inactiveBackground": "#4C1D9599", // Dark Purple (transparent)
+        "titleBar.inactiveForeground": "#FFFFFF99",
+        // Scrollbar
+        "scrollbar.shadow": "#0F172A", // Dark Blue
+        "scrollbarSlider.activeBackground": "#6D28D9", // Purple
+        "scrollbarSlider.background": "#4C1D95", // Dark Purple
+        "scrollbarSlider.hoverBackground": "#6D28D9", // Purple
+        // List
+        "list.activeSelectionBackground": "#6D28D9", // Purple
+        "list.activeSelectionForeground": "#FFFFFF",
+        "list.focusBackground": "#6D28D9", // Purple
+        // Backgrounds
+        "sideBar.background": "#1E293B", // Dark Blue
+        "editor.background": "#1E293B", // Dark Blue
+        "panel.background": "#1E293B", // Dark Blue
+        "banner.background": "#1E293B", // Dark Blue
+        "terminal.background": "#1E293B", // Dark Blue
+        "tab.background": "#1E293B", // Dark Blue
+        // Foregrounds
+        "panel.foreground": "#CBD5E1", // Light Gray
+        "sideBar.foreground": "#CBD5E1", // Light Gray
+        "banner.foreground": "#6D28D9", // Purple
+        "editor.foreground": "#CBD5E1", // Light Gray
+        "terminal.foreground": "#CBD5E1", // Light Gray
+        // Active Foreground
+        "tab.activeForeground": "#FFFFFF", // White
+        // Selected Foreground
+        "tab.selectedForeground": "#FFFFFF", // White
+        // Borders
+        "terminal.border": "#4C1D95", // Dark Purple
+        "editor.border": "#4C1D95", // Dark Purple
+        "tab.border": "#4C1D95", // Dark Purple
+        "sideBar.border": "#4C1D95", // Dark Purple
+        // Active Border
+        "tab.activeBorder": "#6D28D9", // Purple
+        // Inactive Background
+        "tab.inactiveBackground": "#334155", // Medium Blue
+        // Editor Group Header
+        "editorGroupHeader.tabsBackground": "#334155", // Medium Blue
+        // Active Tab Background
+        "tab.activeBackground": "#6D28D9", // Purple
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "explorer.fileNesting.patterns": {
+        "__auth.auth.tsx": "__auth.auth.*",
+        "__auth.demo.tsx": "__auth.demo.*",
+        "__authorized.dealer.api.tsx": "__authorized.dealer.api.*",
+        "__authorized.dealer.document.tsx": "__authorized.dealer.document.*",
+        "__authorized.dealer.features.tsx": "__authorized.dealer.features.*",
+        "__authorized.dealer.sales.tsx": "__authorized.dealer.sales.*",
+        "__authorized.dealer.service.tsx": "__authorized.dealer.service.*",
+        "__authorized.dealer.user.tsx": "__authorized.dealer.user.*",
+        "__authorized.dealer.resource.tsx": "__authorized.dealer.resource.*",
+        "__authorized.dealer.accessories.tsx": "__authorized.dealer.accessories.*",
+        "__authorized.dealer.staff.tsx": "__authorized.dealer.staff.*",
+        "__authorized.dealer.system.tsx": "__authorized.dealer.system.*",
+        "__authorized.IFrameComp.tsx": "__authorized.IFrameComp.*",
+        "__authorized.dealer.$dept.tsx": "__authorized.dealer.$dept.*",
+        "__authorized.component.tsx": "__authorized.component.*",
+        "__customerLandingPages.tsx": "__customerLandingPages.*",
+        "__public.tsx": "__public.*",
+        "__authorized.dealer.tsx": "__authorized.dealer.search.tsx, __authorized.dealer.searchByOrder.tsx, __authorized.dealer.searchTable.tsx",
+        "__auth.tsx": "__auth.tsx, __auth.subscribe.tsx, __auth.login.tsx, __auth.logout.tsx, __auth.destorySession.tsx,__auth.createSession.tsx,__auth.checksubscription.tsx, __auth.usercheck.tsx",
+    },
+    "explorer.sortOrder": "foldersNestsFiles",
+    "do.defaultType": "terminal", // the default
+    "do.macros": { //define actions as Macros that you can access by their name, e.g. "showCurrentFileInFinder"
+        "runBuild": {
+            "key": "ctrl+cmd+q",
+            "type": "task",
+            "command": "pnpm run build"
+        },
+        "runDev": {
+            "key": "ctrl+cmd+w",
+            "type": "task",
+            "command": "pnpm run dev"
+        },
+        "addCommitPush": {
+            "key": "ctrl+cmd+z",
+            "type": "task",
+            "command": "pnpm run push:dirty"
+        },
+        "updatePatch": {
+            "key": "ctrl+cmd+x",
+            "type": "task",
+            "command": "pnpm run update:patch"
+        },
+        "pushUpdate": {
+            "key": "ctrl+cmd+c",
+            "type": "task",
+            "command": "pnpm run push:update"
+        },
+        "foldLevel1": {
+            "key": "ctrl+cmd+v",
+            "type": "command",
+            "command": "editor.foldLevel1",
+        },
+        "foldLevel2": {
+            "key": "ctrl+cmd+b",
+            "type": "command",
+            "command": "editor.foldLevel1",
+        },
+    },
+    "do.onStart": [],
+    "editor.minimap.enabled": false,
+    "markdown-todo.sortByCount": false,
+    "favorites.groups": [
+        "Default",
+        "frequent"
+    ],
+    "favorites.currentGroup": "frequent",
+    "vscodeTodo.enableWideView": false,
+}

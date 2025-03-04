@@ -1,0 +1,2727 @@
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex", "metrics", "views"]
+}
+
+generator docs {
+  provider = "node node_modules/prisma-docs-generator"
+}
+
+model Roadmap {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goal      String?
+  type      String?
+  completed Boolean
+}
+
+model DealerList {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  dealerName       String?
+  dealerAddress    String?
+  dealerCity       String?
+  dealerProv       String?
+  dealerPostal     String?
+  dealerPhone      String?
+  dealerContact    String?
+  dealerEmail      String?
+  adminContact     String?
+  dealerEmailAdmin String?
+  // dept heads
+  financeMgr       String?
+  financeMgrPhone  String?
+  financeMgrEmail  String?
+  serviceMgr       String?
+  serviceMgrPhone  String?
+  serviceMgrEmail  String?
+  pacMgr           String?
+  pacMgrPhone      String?
+  pacMgrEmail      String?
+  officeMgr        String?
+  officeMgrPhone   String?
+  officeMgrEmail   String?
+  salesMgr         String?
+  salesMgrPhone    String?
+  salesMgrEmail    String?
+  GMgr             String?
+  GMgrPhone        String?
+  GMgrEmail        String?
+  owner            String?
+  ownerPhone       String?
+  ownerEmail       String?
+
+  projectId              String?
+  projectName            String?
+  projectCreated         Boolean?                 @default(false)
+  deploymentCreated      Boolean?                 @default(false)
+  deploymentReady        Boolean?                 @default(false)
+  deploymentUrl          String?
+  customerToProvideUrl   Boolean?                 @default(false)
+  customerProvidedUrl    String?
+  updatedUrl             Boolean?                 @default(false)
+  deploymentId           String?
+  deploymentName         String?
+  dbCreated              Boolean?                 @default(false)
+  dbName                 String?
+  dbUrl                  String?
+  blobCreated            Boolean?                 @default(false)
+  blobName               String?
+  blobUrl                String?
+  sentWelcomeEmail       String?
+  DealerMicrosoftQLUsage DealerMicrosoftQLUsage[]
+  DealerTwilioQLUsage    DealerTwilioQLUsage[]
+}
+
+model DealerMicrosoftQLUsage {
+  id          String       @id @default(cuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  month       String?
+  year        String?
+  count       Int?
+  perThousand Float?       @default(0.375)
+  dealerList  DealerList[]
+}
+
+model DealerTwilioQLUsage {
+  id          String       @id @default(cuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  month       String?
+  bill        Float?
+  perThousand Float?       @default(0.375)
+  perNumber   Float?       @default(1.15)
+  dealerList  DealerList[]
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------User-----------------------------------------
+// -----------------------------------------------------------------------------
+model User {
+  id                    String                @id @default(cuid())
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  dealerIdentifier      String?               @unique // USER-1     @unique
+  dealerId              Int?
+  name                  String
+  username              String                @unique
+  email                 String                @unique(map: "User.email_unique")
+  phone                 String?               @unique
+  twilioPhone           String?               @unique
+  multiplier            Float?                @default(1.0)
+  punchClockPassword    String?               @default("1234")
+  commissionStructure   String?               @default("flatRateWithPercentage")
+  commissionPercentage  Float?                @default(1.0)
+  flatRateAmount        Float?                @default(150.0)
+  // twilio
+  accountSid            String?
+  sid                   String?
+  messagingServiceSid   String?
+  // stripe
+  subscriptionId        String?
+  returning             Boolean?              @default(false)
+  lastSubscriptionCheck String?
+  customerId            String?               @unique
+  plan                  String?
+  // dealer
+  omvicNumber           String?               @unique
+  dealer                String?
+  dept                  String?
+  homeBrand             String?
+  order                 Int?
+  // microsoft
+  microId               String?
+  // name             String?
+  givenName             String?
+  familyName            String?
+  identityProvider      String?
+  // toggle for sales call auto call list 
+  displayAutoCallList   Boolean?              @default(true)
+  // sales tracker 
+  totalAppointments     Int?                  @default(2435)
+  completedAppointments Int?                  @default(2435)
+  contractsSold         Int?                  @default(17)
+  depositsTaken         Int?                  @default(17)
+  delivered             Int?                  @default(15)
+  testDrivesTaken       Int?                  @default(30)
+  financeAppsCompleted  Int?                  @default(20)
+  financeAppsApproved   Int?                  @default(19)
+  documentsSigned       Int?                  @default(15)
+  refunded              Int?                  @default(2)
+  // needed
+  workorders            WorkOrder[]
+  positions             Position[]
+  userGoals             UserGoals[]
+  thirtyDayGoals        ThirtyDayGoal[]
+  columnStateSales      ColumnStateSales?
+  ColumnStateInventory  ColumnStateInventory?
+  ColumnStateClient     ColumnStateClient?
+  customerSync          CustomerSync?
+
+  NotificationsUser   NotificationsUser[]
+  EmployeeReview      EmployeeReview[]
+  UserBrands          UserBrands[]
+  UserSchedule        UserSchedule[]
+  PunchClockEntry     PunchClockEntry[]
+  CommissionsWildCard CommissionsWildCard[]
+  Dealer              Dealer?               @relation(fields: [dealerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([dealerId])
+}
+
+model CommissionsWildCard {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  weekOf    DateTime?
+  negative  Float?
+  positive  Float?
+  userId    String
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Position {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  position  String?
+  userId    String
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PunchClockEntry {
+  id        Int       @id @default(autoincrement())
+  start     DateTime
+  end       DateTime?
+  userEmail String
+  username  String
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserSchedule {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  start     String?
+  end       String?
+  day       String
+  userId    String
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserBrands {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand     String?
+  userId    String
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EmployeeReview {
+  id             Int              @id @default(autoincrement())
+  managersName   String
+  managersEmail  String
+  userEmail      String
+  employeeRead   Boolean?         @default(false)
+  sendToEmployee Boolean?         @default(false)
+  createdAt      DateTime         @default(now())
+  userId         String // Foreign key for User
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemsForReview ItemsForReview[]
+}
+
+model ItemsForReview {
+  id               Int            @id @default(autoincrement())
+  title            String
+  description      String
+  employeeReviewId Int
+  employeeReview   EmployeeReview @relation(fields: [employeeReviewId], references: [id], onDelete: Cascade)
+}
+
+model DealRequest {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  userEmail          String?
+  userName           String?
+  requestedUserEmail String?
+  requestedUserName  String?
+  reason             String?
+  financeId          String?
+  approvingManager   String?
+  approved           String?
+}
+
+model TimeOffRequest {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  days             String?
+  userEmail        String?
+  userName         String?
+  reason           String?
+  approvingManager String?
+  approved         String?
+}
+
+model ManagementAnnouncements {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  dept         String?
+  note         String?
+  managerName  String?
+  managerEmail String?
+  displayed    Boolean? @default(false)
+  emailed      Boolean? @default(false)
+}
+
+model NotetoManagement {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userEmail String?
+  userName  String?
+  note      String?
+  read      Boolean? @default(false)
+  anonymous String?  @default("off")
+}
+
+model MicrosoftQLUsage {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  month       String?
+  count       Int?
+  perThousand Float?   @default(0.375)
+}
+
+model TwilioQLUsage {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  month       String?
+  bill        Float?
+  perThousand Float?   @default(0.375)
+  perNumber   Float?   @default(1.15)
+}
+
+model Dealer {
+  id                   Int                    @id @default(1)
+  dealerId             String // DEALER-1
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  // dealer info
+  dealerName           String?
+  dealerAddress        String?
+  dealerCity           String?
+  dealerProv           String?
+  dealerPostal         String?
+  dealerPhone          String?
+  dealerEmail          String?
+  dealerContact        String?
+  dealerAdminContact   String?
+  dealerEmailAdmin     String?
+  dealerEtransferEmail String?
+  vercel               String?
+  github               String?
+  partnerSite          String? // will hold url for calendar and such
+  // commissions
+  perSale              Float?
+  percentage           Float?
+  accPerSale           Float?
+  accPercentage        Float?
+  writerPerSale        Float?
+  writerPercentage     Float?
+  sentWelcomeEmail     String?
+  // dealer fees
+  userLicensing        Int?
+  userFinance          String?
+  userDemo             String?
+  userGasOnDel         String?
+  userOMVIC            String?
+  userOther            Int?
+  userTax              String?
+  userAirTax           String?
+  userTireTax          String?
+  userGovern           String?
+  userPDI              String?
+  userLabour           String?
+  userMarketAdj        String?
+  userCommodity        String?
+  userFreight          String?
+  userAdmin            String?
+  destinationCharge    Int?
+  userEmail            String?                @unique
+  serviceDiscount      String?
+  pacDiscount          String?
+  salesDiscount        String?
+  // comission tiers 
+  bonusTier1           Float?
+  bonusTier2           Float?
+  bonusTier3           Float?
+  bonusTier4           Float?
+  bonusTier5           Float?
+  users                User[]
+  DealerLogo           DealerLogo?
+  DealerBrands         DealerBrands?
+  DealerBrandsActivate DealerBrandsActivate[]
+}
+
+model DealerBrandsActivate {
+  id                   Int      @id @default(1)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  // off road
+  canAm                Boolean  @default(false)
+  canAmSXS             Boolean  @default(false)
+  canAmSkiDoo          Boolean  @default(false)
+  canAmSeaDoo          Boolean  @default(false)
+  canAmSeaDooSwitch    Boolean  @default(false)
+  canAmSpyder          Boolean  @default(false)
+  manitou              Boolean  @default(false)
+  ktm                  Boolean  @default(false)
+  kawasaki             Boolean  @default(false)
+  harleyDavidson       Boolean  @default(false)
+  suzuki               Boolean  @default(false)
+  triumph              Boolean  @default(false)
+  bmwMotorrad          Boolean  @default(false)
+  indian               Boolean  @default(false)
+  ducati               Boolean  @default(false)
+  yamaha               Boolean  @default(false)
+  hondaPowersports     Boolean  @default(false)
+  polaris              Boolean  @default(false)
+  arcticCat            Boolean  @default(false)
+  textronOffRoad       Boolean  @default(false)
+  cFMoto               Boolean  @default(false)
+  hisunMotors          Boolean  @default(false)
+  johnDeere            Boolean  @default(false)
+  beta                 Boolean  @default(false)
+  sherco               Boolean  @default(false)
+  rieju                Boolean  @default(false)
+  zero                 Boolean  @default(false)
+  roehr                Boolean  @default(false)
+  husqvarna            Boolean  @default(false)
+  royalEnfield         Boolean  @default(false)
+  arch                 Boolean  @default(false)
+  janus                Boolean  @default(false)
+  curtiss              Boolean  @default(false)
+  // boats
+  bostonWhaler         Boolean  @default(false)
+  seaRay               Boolean  @default(false)
+  bayliner             Boolean  @default(false)
+  gradyWhite           Boolean  @default(false)
+  masterCraft          Boolean  @default(false)
+  malibuBoats          Boolean  @default(false)
+  regalMarine          Boolean  @default(false)
+  chapmanBoats         Boolean  @default(false)
+  lundBoats            Boolean  @default(false)
+  trackerBoats         Boolean  @default(false)
+  vikingYachts         Boolean  @default(false)
+  hatterasYachts       Boolean  @default(false)
+  chrisCraft           Boolean  @default(false)
+  brunswickCorporation Boolean  @default(false)
+  tiaraYachts          Boolean  @default(false)
+  sabreYachts          Boolean  @default(false)
+  benningtonMarine     Boolean  @default(false)
+  crestliner           Boolean  @default(false)
+  sunTracker           Boolean  @default(false)
+  harrisFloteBote      Boolean  @default(false)
+  rangerBoats          Boolean  @default(false)
+  tritonBoats          Boolean  @default(false)
+  skeeterBoats         Boolean  @default(false)
+  loweBoats            Boolean  @default(false)
+  catalinaYachts       Boolean  @default(false)
+  hunterMarine         Boolean  @default(false)
+  jeanneauAmerica      Boolean  @default(false)
+  beneteauUSA          Boolean  @default(false)
+  // on-road
+  ford                 Boolean  @default(false)
+  chevrolet            Boolean  @default(false)
+  gmc                  Boolean  @default(false)
+  cadillac             Boolean  @default(false)
+  dodge                Boolean  @default(false)
+  jeep                 Boolean  @default(false)
+  ramTrucks            Boolean  @default(false)
+  lucidMotors          Boolean  @default(false)
+  intermeccanica       Boolean  @default(false)
+  toyota               Boolean  @default(false)
+  honda                Boolean  @default(false)
+  nissan               Boolean  @default(false)
+  hyundai              Boolean  @default(false)
+  kia                  Boolean  @default(false)
+  volkswagen           Boolean  @default(false)
+  bmw                  Boolean  @default(false)
+  mercedesBenz         Boolean  @default(false)
+  audi                 Boolean  @default(false)
+  subaru               Boolean  @default(false)
+  mazda                Boolean  @default(false)
+  volvo                Boolean  @default(false)
+  porsche              Boolean  @default(false)
+  jaguarLandRover      Boolean  @default(false)
+  tesla                Boolean  @default(false)
+  rivian               Boolean  @default(false)
+  fiskerInc            Boolean  @default(false)
+  polestar             Boolean  @default(false)
+  //
+  dealerId             Int
+  Dealer               Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@index([dealerId])
+}
+
+model CSIQuestionnaire {
+  id        String        @id @default(cuid())
+  name      String // Name of the CSI questionnaire
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  questions CSIQuestion[] // One-to-many relationship with CSIQuestion
+  responses CSIResponse[] // One-to-many relationship with CSIResponse
+}
+
+model CSIQuestion {
+  id                 String           @id @default(cuid())
+  text               String // The question text
+  type               String // Type of question: "multiple-choice", "sliding-scale", "custom-input"
+  options            String[] // Options for multiple-choice questions (stored as JSON)
+  csiQuestionnaireId String // Foreign key to CSIQuestionnaire
+  csiQuestionnaire   CSIQuestionnaire @relation(fields: [csiQuestionnaireId], references: [id], onDelete: Cascade)
+  answers            CSIAnswer[] // One-to-many relationship with CSIAnswer
+}
+
+model CSIResponse {
+  id                 String           @id @default(cuid())
+  csiQuestionnaireId String // Foreign key to CSIQuestionnaire
+  csiQuestionnaire   CSIQuestionnaire @relation(fields: [csiQuestionnaireId], references: [id], onDelete: Cascade)
+  responses          CSIAnswer[] // One-to-many relationship with CSIAnswer
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model CSIAnswer {
+  id            String      @id @default(cuid())
+  csiResponseId String // Foreign key to CSIResponse
+  csiResponse   CSIResponse @relation(fields: [csiResponseId], references: [id], onDelete: Cascade)
+  csiQuestionId String // Foreign key to CSIQuestion
+  csiQuestion   CSIQuestion @relation(fields: [csiQuestionId], references: [id], onDelete: Cascade)
+  answer        String // The answer (could be a selected option, slider value, or custom input)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model DealerBrands {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand     String?
+
+  Dealer   Dealer? @relation(fields: [dealerId], references: [id])
+  dealerId Int     @unique
+
+  @@index([dealerId])
+}
+
+model SavedDocuments {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  document  Json
+  name      String?  @unique
+  dept      String?
+  userEmail String?
+}
+
+model SavedDocumentsClient {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  SavedDocumentsId String?
+  document         Json?
+  name             String?  @unique
+  dept             String?
+  sendToSign       Boolean? @default(false)
+  docSigned        Boolean? @default(false)
+  inputs           Json?
+  sendToView       Boolean? @default(false)
+  docViewed        Boolean? @default(false)
+  meta             Json?
+  financeId        String?
+  userEmail        String?
+}
+
+model ColumnStateInventory {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  state     Json
+  user      User     @relation(fields: [userEmail], references: [email], onUpdate: Cascade, onDelete: Cascade)
+  userEmail String   @unique
+}
+
+model ColumnStateClient {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  state     Json
+
+  user      User   @relation(fields: [userEmail], references: [email])
+  userEmail String @unique
+}
+
+model CustomerSync {
+  updatedAt DateTime @updatedAt
+
+  orderId      String?
+  clientfileId String?
+  financeId    String?
+
+  user      User   @relation(fields: [userEmail], references: [email])
+  userEmail String @id @unique
+}
+
+model ColumnStateSales {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userEmail], references: [email])
+  userEmail String   @unique
+  state     Json
+}
+
+model ThirtyDayGoal {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userEmail   String
+  title       String?
+  description String?
+  goal        String?
+  expired     Boolean?
+  achieved    String?
+  days        String?
+
+  User User @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+
+  @@index([userEmail])
+}
+
+model UserGoals {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userEmail String
+  year      String? @default("2024")
+  janGoal   Int?    @default(0)
+  febGoal   Int?    @default(0)
+  marGoal   Int?    @default(0)
+  aprGoal   Int?    @default(0)
+  mayGoal   Int?    @default(0)
+  junGoal   Int?    @default(0)
+  julGoal   Int?    @default(0)
+  augGoal   Int?    @default(0)
+  sepGoal   Int?    @default(0)
+  octGoal   Int?    @default(0)
+  novGoal   Int?    @default(0)
+  decGoal   Int?    @default(0)
+  janAch    Int?    @default(0)
+  febAch    Int?    @default(0)
+  marAch    Int?    @default(0)
+  aprAch    Int?    @default(0)
+  mayAch    Int?    @default(0)
+  junAch    Int?    @default(0)
+  julAch    Int?    @default(0)
+  augAch    Int?    @default(0)
+  sepAch    Int?    @default(0)
+  octAch    Int?    @default(0)
+  novAch    Int?    @default(0)
+  decAch    Int?    @default(0)
+
+  User User @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+
+  @@index([userEmail])
+}
+
+model DeptGoals {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dept    String
+  year    String? @default("2024")
+  janGoal Int?    @default(0)
+  febGoal Int?    @default(0)
+  marGoal Int?    @default(0)
+  aprGoal Int?    @default(0)
+  mayGoal Int?    @default(0)
+  junGoal Int?    @default(0)
+  julGoal Int?    @default(0)
+  augGoal Int?    @default(0)
+  sepGoal Int?    @default(0)
+  octGoal Int?    @default(0)
+  novGoal Int?    @default(0)
+  decGoal Int?    @default(0)
+
+  janAch Int? @default(0)
+  febAch Int? @default(0)
+  marAch Int? @default(0)
+  aprAch Int? @default(0)
+  mayAch Int? @default(0)
+  junAch Int? @default(0)
+  julAch Int? @default(0)
+  augAch Int? @default(0)
+  sepAch Int? @default(0)
+  octAch Int? @default(0)
+  novAch Int? @default(0)
+  decAch Int? @default(0)
+}
+
+model DealerLogo {
+  id        Int      @id @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dealerLogo String?
+
+  Dealer   Dealer? @relation(fields: [dealerId], references: [id])
+  dealerId Int     @unique
+
+  @@index([dealerId])
+}
+
+model Interruptions {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userEmail String?
+  location  String?
+  date      String?
+  read      String?
+  title     String?
+}
+
+model microsoftAccount {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  email            String   @unique
+  username         String?
+  microId          String?
+  name             String?
+  givenName        String?
+  familyName       String?
+  identityProvider String?
+}
+
+model NotificationsUser {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  title        String?
+  content      String?  @db.Text
+  dismiss      String?
+  type         String?
+  subType      String?
+  financeId    String?
+  clientfileId String?
+  to           String?
+  from         String?
+  userEmail    String
+  customerName String?
+  read         Boolean  @default(false)
+  messageId    String?  @unique
+
+  User User @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+
+  @@index([userEmail])
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------User-----------------------------------------
+// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// -------------------------------dev-----------------------------------------
+// -----------------------------------------------------------------------------
+model Board {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userEmail String?
+  boardId   String?
+  color     String?
+  name      String   @unique
+  columns   Column[]
+  items     Item[]
+}
+
+model Column {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String   @unique
+  order     Float    @default(0)
+  Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId   String
+  items     Item[]
+
+  @@index([boardId])
+}
+
+model Item {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  title     String
+  content   String?
+  order     Float?
+  Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId   String
+  Column    Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  columnId  String
+
+  @@index([boardId])
+  @@index([columnId])
+}
+
+model Csi {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userEmail String?
+  csiId     String?
+  color     String?
+  name      String   @unique
+
+  questions   Question[]
+  answers     Answer[]
+  answersData AnswerData[]
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String   @unique
+  order     Float    @default(0)
+
+  Csi   Csi    @relation(fields: [csiId], references: [id], onDelete: Cascade)
+  csiId String
+
+  answers     Answer[]
+  answersData AnswerData[]
+
+  @@index([csiId])
+}
+
+model Answer {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  title     String
+  content   String?
+  order     Float?
+
+  Csi   Csi    @relation(fields: [csiId], references: [id], onDelete: Cascade)
+  csiId String
+
+  Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+
+  answersData AnswerData[]
+
+  @@index([csiId])
+  @@index([questionId])
+}
+
+model AnswerData {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  title     String
+  order     Float?
+
+  Csi   Csi    @relation(fields: [csiId], references: [id], onDelete: Cascade)
+  csiId String
+
+  Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+
+  Answer   Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  answerId String
+
+  @@index([answerId])
+  @@index([csiId])
+  @@index([questionId])
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------dev-----------------------------------------
+// -----------------------------------------------------------------------------
+//--------------------accessories
+//--------------------parts
+model DSALeads {
+  id                   String   @id @default(cuid())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  dealerName           String?
+  dealerAddress        String?
+  dealerCity           String?
+  dealerProv           String?
+  dealerPostal         String?
+  dealerPhone          String?
+  ownerName            String?
+  ownerEmail           String?
+  ownerPhone           String?
+  adminName            String?
+  adminEmail           String?
+  adminPhone           String?
+  dealerEtransferEmail String?
+
+  generatedFrom      String?
+  message            String?
+  infoBeforePurchase Boolean?
+  justlooking        Boolean?
+  demoBeforePurchase Boolean?
+  seekingAppointment Boolean?
+  timeToPurchase     String?
+  triedDemo          Boolean?
+  purchased          Boolean?
+  status             String?
+  read               String?
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------dealer-----------------------------------------
+// -----------------------------------------------------------------------------
+
+model CsiQuestion {
+  id                          Int      @id @default(autoincrement())
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  title                       String?
+  departmentName              String? // Added to identify the department
+  departmentIndex             Int?
+  questionIndex               Int? // Changed from `inputIndex` to `questionIndex`
+  question                    String?
+  answerFormat                String?
+  customMultipleChoiceAnswer  String? // Assuming this is for a single custom answer
+  customMultipleChoiceAnswers String[] // Array for multiple custom answers
+}
+
+// dont think we can put this one in dealer because it will have multiple savews for eachd ay
+model StoreHours {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  day       String?   @unique
+  start     DateTime?
+  end       DateTime?
+  userEmail String?
+}
+
+model StaffChat {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  body      String
+  userEmail String
+  username  String
+  dept      String
+  reaction  String?
+  reactions Reactions[]
+}
+
+model StaffMessages {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  body      String
+  from      String
+  username  String
+  to        String
+  userEmail String
+}
+
+model Reactions {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  reaction String?
+
+  staffChatId String
+  staffchat   StaffChat @relation(fields: [staffChatId], references: [id])
+
+  @@index([staffChatId])
+}
+
+model SalespersonSched {
+  id               String    @id @default(cuid())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  day              String?
+  start            DateTime?
+  end              DateTime?
+  salespersonEmail String?
+  userEmail        String?
+  title            String?
+  resourceId       String?
+  userName         String?
+  userId           String?
+  name             String?
+}
+
+model Sales {
+  id String @id @default(cuid())
+
+  financeId String?
+  email     String
+  sales     Int?
+  sold      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------sales-----------------------------------------
+// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// -------------------------------External Assets-----------------------------------------
+// -----------------------------------------------------------------------------
+
+model GetConversation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  jsonData  Json
+  userEmail String?
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------External Assets-------------------------------
+// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// -------------------------------scripts / templates---------------------------
+// -----------------------------------------------------------------------------
+model Script {
+  id       String  @id @default(cuid())
+  name     String?
+  email    String?
+  content  String?
+  category String?
+  subCat   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailTemplates {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subject   String? @unique
+  body      String?
+  category  String?
+  userEmail String
+  dept      String?
+  subCat    String? @unique
+  type      String?
+}
+
+model EmailTemplatesForDropdown {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subCat    String?
+  body      String?
+  userEmail String?
+  category  String?
+  type      String?
+  subject   String?
+}
+
+model EmailClient {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstName   String?
+  lastName    String?
+  name        String?
+  body        String?
+  userEmail   String?
+  category    String?
+  type        String?
+  subject     String?
+  cc          String?
+  bcc         String?
+  attributes  String?
+  dept        String?
+  label       String?
+  attachments String?
+  to          String?
+  review      String?
+  date        String?
+  fromEmail   String?
+}
+
+// so user can add their own templates to the drop down on overview, finance dashbaoard or anywhere where the overview is displayed
+model UserEmailTemplates {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userEmail String?
+  body      String?
+  subject   String?
+  review    String?
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------scripts / templates---------------------------
+// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// -------------------------------print docs---------------------------
+// -----------------------------------------------------------------------------
+model SaveMyDoc {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String?
+
+  doc      Json
+  docName  String?
+  dept     String?
+  fileName String?
+  category String?
+}
+
+model UploadDocs {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  financeId String?
+  category  String?
+  fileName  String?
+  userEmail String?
+  itemId    String?
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------------print docs---------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+//                              finance
+// -----------------------------------------------------------------------------
+model FinanceProduct {
+  id              String            @id @default(cuid())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  name            String?
+  financeProvidor FinanceProvidor[]
+  financePrice    FinancePrice[]
+}
+
+model FinanceProvidor {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String?
+  order     Float    @default(0)
+
+  FinanceProduct   FinanceProduct @relation(fields: [financeProductId], references: [id], onDelete: Cascade)
+  financeProductId String
+
+  financePrice FinancePrice[]
+
+  @@index([financeProductId])
+}
+
+model FinancePrice {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  packageName  String
+  packagePrice Int
+
+  FinanceProduct   FinanceProduct? @relation(fields: [financeProductId], references: [id])
+  financeProductId String?
+
+  FinanceProvidor   FinanceProvidor? @relation(fields: [FinanceProvidorId], references: [id])
+  FinanceProvidorId String?
+
+  @@index([financeProductId])
+  @@index([FinanceProvidorId])
+}
+
+// -----------------------------------------------------------------------------
+//                              finance
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+//                              finance / clients
+// -----------------------------------------------------------------------------
+model FinanceStorage {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  url       String
+  filePath  String?
+  financeId String?   @unique
+  Finance   Finance[]
+}
+
+model ClientApts {
+  id                   String    @id @default(cuid())
+  financeId            String
+  title                String?
+  start                DateTime?
+  end                  DateTime?
+  contactMethod        String?
+  completed            String?   @default("no") // yes or no
+  apptStatus           String?   @default("Future") // future past present
+  apptType             String?   @default("Sales") // service sales parts ect
+  note                 String?
+  unit                 String?
+  brand                String?
+  firstName            String?
+  lastName             String?
+  email                String?
+  phone                String?
+  address              String?
+  clientfileId         String?
+  userEmail            String
+  userId               String
+  // need to update
+  description          String?
+  descriptionTemplate  String?
+  resultOfcall         String?
+  resultOfcallTemplate String?
+  userName             String?
+  //attachments   String?
+  direction            String?
+  resourceId           Int?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  isPublished          DateTime? @default(now())
+  Finance              Finance?  @relation("finance", fields: [financeId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([financeId])
+}
+
+model Automations {
+  id               String  @id @default(cuid())
+  userEmail        String  @unique
+  pickUp24before   String?
+  appt24before     String?
+  noFollowup       String?
+  askForReferral   String?
+  oneYearAnni      String?
+  del7days         String?
+  afterDelTY       String?
+  afterHoursClosed String?
+}
+
+model Automation {
+  id           String  @id @default(cuid())
+  userEmail    String?
+  type         String?
+  financeId    String?
+  clientfileId String?
+}
+
+model CheckLatestEmail {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userEmail     String   @unique
+  emailId       String?
+  lastEmailSent String?
+  subject       String?
+  sender        String?
+  isRead        String?
+}
+
+model WishList {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId        String?
+  firstName     String?
+  lastName      String?
+  email         String?
+  phone         String?
+  brand         String?
+  model         String?
+  brand2        String?
+  model2        String?
+  wishListNotes String?
+  notified      String?
+}
+
+model DemoDay {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userEmail String?
+  firstName String?
+  lastName  String?
+  email     String?
+  phone     String?
+  brand     String?
+  brand2    String?
+  model     String?
+  model2    String?
+  leadNote  String?
+  notified  String?
+}
+
+model AccOrder {
+  dealerId            String?               @unique // PAC-1
+  id                  String                @id @default(cuid())
+  AccOrderId          Int                   @default(autoincrement())
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  userEmail           String?
+  userName            String?
+  pacUserName         String?
+  pacUserEmail        String?
+  dept                String? // Accessories, Parts
+  sellingDept         String?
+  sentToPac           Boolean?              @default(false) // true
+  fulfilled           Boolean?              @default(false) // true
+  sentDate            DateTime?
+  total               Float?
+  discount            Float?
+  discPer             Float?
+  paid                Boolean?
+  paidDate            String?
+  status              String?
+  workOrderId         Int?
+  note                String?
+  financeId           String?
+  clientfileId        String
+  servicePackagesId   String?
+  //
+  AccessoriesOnOrders AccessoriesOnOrders[]
+  WorkOrderNotes      WorkOrderNotes[]
+  Payment             Payment[]
+  WorkOrder           WorkOrder?            @relation(fields: [workOrderId], references: [workOrderId])
+  Finance             Finance?              @relation(fields: [financeId], references: [id], onDelete: SetNull)
+  Clientfile          Clientfile            @relation(fields: [clientfileId], references: [id], onDelete: Cascade)
+  ServicePackages     ServicePackages?      @relation(fields: [servicePackagesId], references: [id])
+
+  @@index([clientfileId])
+  @@index([workOrderId])
+  @@index([financeId])
+}
+
+model AccessoriesOnOrders {
+  id             String          @id @default(cuid())
+  quantity       Int             @default(1)
+  accOrderId     String?
+  status         String?         @default("In Stock")
+  orderNumber    String?
+  OrderInvId     String?
+  accessoryId    String
+  service        String?
+  hour           Int?
+  OrderInventory OrderInventory? @relation(fields: [OrderInvId], references: [id])
+  Accessories    Accessories     @relation(fields: [accessoryId], references: [id], onDelete: Cascade)
+  AccOrder       AccOrder?       @relation(fields: [accOrderId], references: [id], onDelete: Cascade)
+
+  @@unique([accOrderId, accessoryId])
+  @@unique([OrderInvId])
+}
+
+model Accessories {
+  id                  String                @id @default(cuid())
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  dealerId            String                @unique // CLIENT-1
+  partNumber          String?
+  brand               String?
+  name                String?
+  price               Float?
+  cost                Float?
+  quantity            Int?
+  minQuantity         Int?
+  description         String?
+  category            String?
+  subCategory         String?
+  onOrder             Int?
+  distributer         String?
+  location            String?
+  note                String?
+  workOrderSuggestion String?
+  AccessoriesOnOrders AccessoriesOnOrders[]
+}
+
+model Payment {
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  dealerId    String?
+  paymentType String?
+  cardType    String?
+  amountPaid  Float?
+  cardNum     String?
+  receiptId   String?
+  financeId   String?
+  userEmail   String?
+  accOrderId  String?
+  workOrderId Int?
+  //
+  AccOrder    AccOrder?  @relation(fields: [accOrderId], references: [id], onDelete: Cascade)
+  Finance     Finance?   @relation(fields: [financeId], references: [id], onDelete: SetNull)
+  WorkOrder   WorkOrder? @relation(fields: [workOrderId], references: [workOrderId])
+
+  //
+  @@index([workOrderId])
+  @@index([accOrderId])
+  @@index([financeId])
+}
+
+model OrderInventory {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  userEmail  String?
+  userName   String?
+  attachedId String?
+  dept       String?
+  total      Float?
+  discount   Float?
+  discPer    Float?
+  status     String?
+  sendTo     String?
+
+  AccessoriesOnOrders AccessoriesOnOrders[]
+}
+
+// -----------------------------------------------------------------------------
+// client
+// -----------------------------------------------------------------------------
+model Clientfile {
+  id             String        @id @default(cuid())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  dealerId       String        @unique // CLIENT-1
+  financeId      String?       @unique
+  userId         String?
+  userEmail      String?
+  firstName      String?
+  lastName       String?
+  name           String?
+  email          String?       @unique
+  phone          String?
+  address        String?
+  city           String?
+  postal         String?
+  province       String?
+  dl             String?
+  typeOfContact  String?
+  timeToContact  String?
+  conversationId String?
+  billingAddress Boolean?
+  dob            String?
+  //
+  AccOrder       AccOrder[]
+  Finance        Finance[]
+  WorkOrder      WorkOrder[]
+  ServiceUnit    ServiceUnit[]
+  Comm           Comm[]
+  SmsMessages    SmsMessages[]
+}
+
+model ClientTasks {
+  id                 String               @id @default(cuid())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  dealerId           String? // TASK-1
+  title              String?
+  status             String?
+  priority           String?
+  userName           String?
+  userEmail          String?
+  dept               String?
+  label              String?
+  clientEmail        String?
+  ClientTasksUpdates ClientTasksUpdates[]
+}
+
+model ClientTasksUpdates {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  update        String?
+  userName      String?
+  userEmail     String?
+  clientTasksId String?
+  status        String?
+  priority      String?
+  label         String?
+
+  ClientTasks ClientTasks? @relation(fields: [clientTasksId], references: [id])
+
+  @@unique([clientTasksId])
+}
+
+model DealerTasks {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dealerId  String? // DEV-1
+  title     String?
+  status    String?
+  priority  String?
+  userName  String?
+  userEmail String?
+  dept      String?
+  label     String?
+
+  DealerTasksUpdates DealerTasksUpdates[]
+}
+
+model DealerTasksUpdates {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  update        String?
+  userName      String?
+  userEmail     String?
+  dealerTasksId String?
+  status        String?
+  priority      String?
+  label         String?
+
+  DealerTasks DealerTasks? @relation(fields: [dealerTasksId], references: [id])
+
+  @@unique([dealerTasksId])
+}
+
+model SmsMessages {
+  id                  String      @id @default(cuid())
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  title               String?
+  messageSid          String?
+  accountSid          String?
+  dateSent            String?
+  sid                 String      @unique
+  smsMessageSid       String?
+  messagingServiceSid String?
+  from                String?
+  to                  String?
+  body                String?
+  numMedia            String?
+  numSegments         String?
+  clientPhone         String?
+  clientName          String?
+  clientEmail         String?
+  userEmail           String?
+  //
+  Clientfile          Clientfile? @relation(fields: [clientPhone], references: [id], onDelete: Cascade)
+
+  @@index([clientPhone])
+}
+
+// -----------------------------------------------------------------------------
+// service
+// -----------------------------------------------------------------------------
+
+model Session {
+  id           String    @id @default(uuid())
+  data         String?   @db.Text
+  expires      DateTime?
+  email        String?
+  expiresAt    DateTime?
+  refreshToken String?
+  accessToken  String?
+  name         String?
+  clientId     String?
+  clientSecret String?
+}
+
+// -----------------------------------------------------------------------------
+// finance paticulars
+// -----------------------------------------------------------------------------
+model LockFinanceTerminals {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  locked       Boolean  @default(false)
+  financeId    String?
+  salesEmail   String?
+  userName     String?
+  financeEmail String?
+  financeName  String?
+  customerName String?
+  unit         String?
+  note         String?
+  response     Boolean? @default(false)
+}
+
+model Finance {
+  id                       String   @id @default(cuid()) // other
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  dealerId                 String   @unique // SALES-1
+  userEmail                String?
+  userName                 String? // need to add //
+  financeManagerName       String? // need to add // // need to add on site actions //
+  financeManager           String? // employees
+  email                    String? // client // need to add on site actions // 
+  firstName                String?
+  lastName                 String?
+  phone                    String?
+  name                     String?
+  address                  String?
+  city                     String?
+  postal                   String?
+  province                 String?
+  dl                       String?
+  typeOfContact            String?
+  timeToContact            String?
+  dob                      String?
+  optionsTotal             String? // needed  // finance strings
+  lienPayout               String?
+  leadNote                 String?
+  sendToFinanceNow         String?
+  dealNumber               String?
+  desiredPayments          String?  @default("Standard Payment")
+  desiredPaymentsOther     String?
+  warrMonths               String?
+  warrKms                  String?
+  warrName                 String?
+  actualCost               String?
+  grossProfit              String?
+  tax                      String? // finance numbers
+  withTax                  String?
+  sub                      String? //int
+  contractTotal            String?
+  contractTotalWithLicOmv  String?
+  principal                String?
+  totalInterestCost        String?
+  monthly                  String? //int
+  biweekly                 String?
+  weekly                   String?
+  iRate                    String?  @default("10.99")
+  months                   String?  @default("60")
+  discount                 String?  @default("0.0")
+  total                    String?
+  deposit                  String?  @default("500")
+  totalWithOptions         String?
+  discountPer              String?  @default("0.0")
+  lien                     String?  @default("0.0")
+  deliveryCharge           String?
+  labour                   String?  @default("0.0")
+  paintPrem                String?  @default("0.0")
+  pdi                      String? // dealer fees
+  commodity                String?
+  admin                    String?
+  freight                  String?
+  licensing                String?
+  // adding
+  financeFee               Float?
+  demoFee                  Float?
+  gasOnDelFee              Float?
+  airTaxFee                Float?
+  tireTaxFee               Float?
+  tireTaxAmount            Float?   @default(2)
+  governFee                Float?
+  markAdjFee               Float?
+  destChargeFee            Float?
+  paymentFreq              String? // wanted unit // weekly biweekyl monthly
+  paymentStartDate         String?
+  financeDeal              String?
+  stockNum                 String?
+  year                     String?
+  brand                    String?
+  mileage                  String?
+  model                    String?
+  model1                   String?
+  color                    String?
+  modelCode                String?
+  msrp                     String?
+  trim                     String?
+  bikeStatus               String?
+  vin                      String?
+  invId                    String? // trade
+  motor                    String?
+  tag                      String?
+  tradeValue               String?  @default("0.0")
+  tradeDesc                String?
+  tradeColor               String?
+  tradeYear                String?
+  tradeMake                String?
+  tradeVin                 String?
+  tradeTrim                String?
+  tradeMileage             String?
+  tradeLocation            String?
+  // different format
+  accessories              Float?   @default(0.0)
+  motorTotal               Float?   @default(0.0)
+  optionsTotalMani         Float?   @default(0.0)
+  feesTotal                Float?   @default(0.0)
+  accTotal                 Float?   @default(0.0)
+  modelSpecOpt             Float?   @default(0.0)
+  maniTotal                Float?   @default(0.0)
+  bmwTotal                 Float?   @default(0.0)
+  totalSum                 Float?
+  essentials               Float?
+  options                  Float?
+  numberOfPayments         Float?
+  panAmTubelessLacedWheels Float?
+  panAmAdpRide             Float?
+  hdWarrAmount             Float?
+  hdAcc                    Float?
+  InPerson                 Int?     @default(0) // calls
+  Phone                    Int?     @default(0)
+  SMS                      Int?     @default(0)
+  Email                    Int?     @default(0)
+  Other                    Int?     @default(0)
+  contractTax              Float?
+  beforeDiscount           Float?
+  perDiscountGiven         Float?
+  calcIntTotal             Float?
+  calculateMonthly         Float?
+  netDifference            Float?
+  hstOnSubTotal            Float?
+  hstPayableOnTrade        Float?
+  rebate                   Float?
+  lienRegistratoinFee      Float?
+  payableOnDel             Float?
+  balanceFinanced          Float?
+  netFinance               Float?
+  netDiff                  Float?
+  newTaxAmount             Float?
+  gasOnDel                 Float?
+  subTotal                 Float?
+  afterDeposit             Float?
+  lienRegFee               Float?
+  balanceToFinance         Float?
+  netAmountFinanced        Float?
+  costOfBorrowing          Float?
+  // dates
+  referral                 String? // dates
+  visited                  String?
+  bookedApt                String?
+  aptShowed                String?
+  aptNoShowed              String?
+  testDrive                String?
+  metService               String?
+  metManager               String?
+  metParts                 String?
+  sold                     String?
+  depositMade              String?
+  depositTakenDate         String? // this is the one to used for dates
+  refund                   String?
+  turnOver                 String?
+  financeApp               String?
+  approved                 String?
+  signed                   String?
+  pickUpSet                String?
+  demoed                   String?
+  lastContact              String?
+  status                   String?  @default("Active")
+  customerState            String?  @default("Pending") // reached, pending, attemtped
+  result                   String?
+  timesContacted           String?
+  nextAppointment          String?
+  followUpDay              String?
+  deliveryDate             String?
+  delivered                String?
+  deliveredDate            String?
+  notes                    String?
+  visits                   String?
+  progress                 String?
+  metSalesperson           String?
+  metFinance               String?
+  financeApplication       String?
+  pickUpDate               String?
+  pickUpTime               String?
+  docsSigned               String?
+  tradeRepairs             String?
+  seenTrade                String?
+  lastNote                 String?
+  applicationDone          String?
+  licensingSent            String?
+  liceningDone             String?
+  refunded                 String?
+  cancelled                String?
+  lost                     String?
+  dLCopy                   String?
+  insCopy                  String?
+  testDrForm               String?
+  voidChq                  String?
+  loanOther                String?
+  signBill                 String?
+  ucda                     String?
+  tradeInsp                String?
+  funded                   String?
+  quoted                   String?
+  customerWS               String?
+  otherDocs                String?
+  urgentFinanceNote        String?
+  leadSource               String?
+  financeDeptProductsTotal String?
+  bank                     String?
+  loanNumber               String?
+  idVerified               String?
+  dealerCommission         String?
+  financeCommission        String?
+  salesCommission          String?
+  firstPayment             String?
+  loanMaturity             String?
+  clientfileId             String?
+  inventoryMotorcycleId    String?
+  financeStorageId         String?
+  // FinanceApplicationId     String?               @unique
+  finAppFullName           String?
+  relationship             String?
+  sin                      String?
+  streetAddress            String?
+  addressDuration          String?
+  finAppCity               String?
+  finAppPostal             String?
+  finAppProv               String?
+  employer                 String?
+  job                      String?
+  employmentStatus         String?
+  employerAddress          String?
+  employerCity             String?
+  employerProvince         String?
+  employerPostal           String?
+  employerPhone            String?
+  employmentDuration       String?
+  employer2                String?
+  job2                     String?
+  employerAddress2         String?
+  employerCity2            String?
+  employerProvince2        String?
+  employerPostal2          String?
+  employerPhone2           String?
+  employmentDuration2      String?
+  monthlyGrossIncome       String?
+  bankName                 String?
+  branchAddress            String?
+  mortgagePayment          String?
+  utilities                String?
+  propertyTaxes            String?
+  loanType                 String?
+  loanMonthlyPayment       String?
+
+  // arrays 
+  InventoryMotorcycle InventoryMotorcycle?
+  ClientApts          ClientApts[]          @relation("finance")
+  Comm                Comm[]
+  FinanceDeptProducts FinanceDeptProducts[]
+  FinanceTradeUnit    FinanceTradeUnit[]
+  AccOrder            AccOrder[]
+  WorkOrder           WorkOrder[]
+  Payment             Payment[]
+  FinanceNote         FinanceNote[]
+  Clientfile          Clientfile?           @relation(fields: [clientfileId], references: [id], onDelete: Cascade)
+  FinManOptions       FinManOptions[]       @relation("finance")
+  bmwMotoOptions      BmwMotoOptions[]      @relation("finance")
+  FinCanOptions       FinCanOptions[]       @relation("finance")
+  // FinanceApplication  FinanceApplication?   @relation("FinanceApplicationToFinance", fields: [FinanceApplicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  FinanceStorage      FinanceStorage?       @relation(fields: [financeStorageId], references: [id])
+  ReviewDealMgr       ReviewDealMgr[]
+  SelectedOptions     SelectedOptions[]
+
+  @@index([clientfileId])
+}
+
+model SelectedOptions {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  packageName  String?
+  packagePrice Float?
+  financeId    String?
+  Finance      Finance? @relation(fields: [financeId], references: [id], onDelete: Cascade)
+}
+
+model ReviewDealMgr {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userName     String?
+  userEmail    String?
+  userNote     String?
+  unit         String?
+  mgrName      String?
+  mgrEmail     String?
+  mgrNote      String?
+  reviewInfo   String?
+  sent         Boolean  @default(false)
+  reviewed     Boolean  @default(false)
+  urgent       Boolean  @default(false)
+  financeId    String?
+  clientfileId String?
+  Finance      Finance? @relation(fields: [financeId], references: [id], onDelete: Cascade)
+}
+
+model FinanceNote {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  body         String?
+  userEmail    String?
+  userName     String?
+  clientfileId String
+  financeId    String?
+
+  Finance       Finance?        @relation(fields: [financeId], references: [id], onDelete: Cascade)
+  selectedUsers SelectedUsers[]
+
+  @@index([financeId])
+}
+
+model SelectedUsers {
+  id            String      @id @default(cuid())
+  createdAt     DateTime    @default(now())
+  selectedName  String?
+  selectedEmail String?
+  FinanceNoteId String
+  FinanceNote   FinanceNote @relation(fields: [FinanceNoteId], references: [id], onDelete: Cascade)
+
+  @@index([FinanceNoteId])
+}
+
+model FinanceTradeUnit {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  dealerId    String // SALES-1
+  financeId   String
+  price       String?
+  brand       String?
+  model       String?
+  color       String?
+  accessories String?
+  options     String?
+  year        String?
+  vin         String?
+  trim        String?
+  mileage     String?
+  location    String?
+  condition   String?
+  repairs     String?
+  stockNum    String?
+  licensing   Boolean?
+  tradeEval   Boolean?
+  //
+  Finance     Finance  @relation(fields: [financeId], references: [id], onDelete: Cascade)
+
+  @@index([financeId])
+}
+
+model InventoryMotorcycle {
+  id                 String      @id @default(cuid())
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  dealerId           String      @unique // SALES-1
+  packageNumber      String?
+  // delete next one
+  stockNumber        String?
+  type               String?
+  class              String?
+  year               String?
+  make               String?
+  model              String?
+  modelName          String?
+  submodel           String?
+  subSubmodel        String?
+  exteriorColor      String?
+  hdcFONumber        String?
+  hdmcFONumber       String?
+  vin                String?
+  location           String?
+  mfgSerialNumber    String?
+  engineNumber       String?
+  plates             String?
+  keyNumber          String?
+  length             String?
+  width              String?
+  engine             String?
+  fuelType           String?
+  power              String?
+  chassisNumber      String?
+  chassisYear        String?
+  chassisMake        String?
+  chassisModel       String?
+  chassisType        String?
+  registrationState  String?
+  insuranceCompany   String?
+  policyNumber       String?
+  insuranceAgent     String?
+  note               String?
+  orderStatus        String?     @default("STOCK") // STOCK, ONORDER
+  grossWeight        Float?      @default(0.0)
+  netWeight          Float?      @default(0.0)
+  freight            Float?      @default(0.0)
+  price              Float?      @default(0.0)
+  actualCost         Float?      @default(0.0)
+  floorPlanDueDate   DateTime?
+  mileage            Int?        @default(1)
+  packagePrice       Float?      @default(0.0)
+  registrationExpiry DateTime?
+  insuranceStartDate DateTime?
+  insuranceEndDate   DateTime?
+  status             String?     @default("Available") // Reservced
+  sold               Boolean?    @default(false) //
+  consignment        Boolean?    @default(false) //
+  onOrder            Boolean?    @default(false) //
+  stocked            Boolean?    @default(false) //
+  isNew              Boolean?    @default(true) //
+  stockedDate        DateTime?   @default(now()) //
+  expectedOn         DateTime?   @default(now()) //
+  age                DateTime?   @default(now()) //
+  clientfileId       String?
+  financeId          String?     @unique
+  //
+  Finance            Finance?    @relation(fields: [financeId], references: [id], onDelete: Cascade)
+  WorkOrder          WorkOrder[]
+
+  @@index([financeId])
+}
+
+model WorkOrder {
+  dealerId          String    @unique // WO-1
+  workOrderId       Int       @id @default(autoincrement())
+  brand             String?
+  unit              String?
+  mileage           String?
+  vin               String?
+  tag               String?
+  motor             String?
+  color             String?
+  budget            String?
+  waiter            Boolean?
+  totalLabour       Float?
+  totalParts        Float?
+  subTotal          Float?
+  total             Float?
+  writer            String?
+  userEmail         String?
+  tech              String?
+  discDollar        Float?
+  discPer           Float?
+  techEmail         String?
+  customerSig       String?
+  status            String?
+  location          String?
+  quoted            String?
+  paid              String?
+  remaining         String?
+  FinanceUnitId     String?
+  ServiceUnitId     String?
+  financeId         String?
+  clientfileId      String?
+  warrantyWork      Boolean?  @default(false)
+  closedAt          DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  sentToServiceTime DateTime?
+  sentToPartsTime   DateTime?
+  openedTime        DateTime?
+  waiterTime        DateTime?
+  inWorksTime       DateTime?
+  workCompletedTime DateTime?
+  schedForDelTime   DateTime?
+  registerWarrTime  DateTime?
+  oemResponse       DateTime?
+
+  CustomerSignatureId   String?
+  inventoryMotorcycleId String?
+  userId                String?
+  //
+  user                  User?                  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ServiceUnit           ServiceUnit[]
+  AccOrder              AccOrder[]
+  Finance               Finance?               @relation(fields: [financeId], references: [id], onDelete: Cascade)
+  Clientfile            Clientfile?            @relation(fields: [clientfileId], references: [id], onDelete: Cascade)
+  ServicesOnWorkOrders  ServicesOnWorkOrders[]
+  Payment               Payment[]
+  WorkOrderApts         WorkOrderApts[]
+  WorkOrderClockEntry   WorkOrderClockEntry[]
+  WorkOrderNotes        WorkOrderNotes[]
+  InventoryMotorcycle   InventoryMotorcycle?   @relation(fields: [inventoryMotorcycleId], references: [id], onDelete: Cascade)
+  CustomerSignature     CustomerSignature?
+  ServicePackages       ServicePackages[]
+  ServicesOnPackages    ServicesOnPackages[]
+
+  @@index([userId])
+  @@index([CustomerSignatureId])
+  @@index([inventoryMotorcycleId])
+  @@index([clientfileId])
+  @@index([FinanceUnitId])
+  @@index([financeId])
+  @@index([ServiceUnitId])
+}
+
+model ServicesOnWorkOrders {
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  quantity    Int        @default(1)
+  hr          Float?
+  status      String?
+  workOrderId Int?
+  serviceId   String
+  WorkOrder   WorkOrder? @relation(fields: [workOrderId], references: [workOrderId], onDelete: Cascade)
+  Services    Services   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@index([workOrderId])
+}
+
+model Services {
+  id                  String                 @id @default(cuid())
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  dealerId            String                 @unique
+  description         String?
+  estHr               Float?
+  service             String?
+  price               Float?
+  ServicesOnPackages  ServicesOnPackages[]
+  ServicesOnWorkOrder ServicesOnWorkOrders[]
+}
+
+model ServicePackages {
+  id                 String               @id @default(cuid())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  packageName        String?
+  description        String?
+  totalHours         Float?
+  workOrderId        Int?
+  dealerId           String               @unique
+  // Relationships
+  AccOrder           AccOrder[]
+  WorkOrder          WorkOrder?           @relation(fields: [workOrderId], references: [workOrderId], onDelete: Cascade)
+  ServicesOnPackages ServicesOnPackages[] // One-to-many relationship with ServicesOnPackages
+
+  @@index([workOrderId])
+}
+
+model ServicesOnPackages {
+  id                String           @id @default(cuid())
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  quantity          Int              @default(1)
+  hr                Float?
+  status            String?
+  workOrderId       Int?
+  serviceId         String
+  servicePackagesId String?
+  // Relationships
+  ServicePackages   ServicePackages? @relation(fields: [servicePackagesId], references: [id], onDelete: Cascade)
+  WorkOrder         WorkOrder?       @relation(fields: [workOrderId], references: [workOrderId], onDelete: Cascade)
+  Services          Services         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([servicePackagesId])
+  @@index([serviceId])
+  @@index([workOrderId])
+}
+
+model CustomerSignature {
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  signature   String?
+  workOrderId Int        @unique
+  WorkOrder   WorkOrder? @relation(fields: [workOrderId], references: [workOrderId], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([workOrderId])
+}
+
+model WorkOrderApts {
+  id          String     @id @default(cuid())
+  tech        String?
+  techEmail   String?
+  writer      String?
+  start       DateTime?
+  end         DateTime?
+  title       String?
+  workOrderId Int?
+  completed   Boolean?
+  resourceId  String?
+  unit        String?
+  brand       String?
+  mileage     String?
+  vin         String?
+  tag         String?
+  motor       String?
+  color       String?
+  location    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  WorkOrder   WorkOrder? @relation(fields: [workOrderId], references: [workOrderId], onDelete: Cascade)
+
+  @@index([workOrderId])
+}
+
+model WorkOrderNotes {
+  id          String     @id @default(cuid())
+  body        String?
+  userName    String?
+  userEmail   String?
+  workOrderId Int?
+  AccOrderId  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  WorkOrder   WorkOrder? @relation(fields: [workOrderId], references: [workOrderId], onDelete: Cascade)
+  AccOrder    AccOrder?  @relation(fields: [AccOrderId], references: [id], onDelete: Cascade)
+
+  @@index([workOrderId])
+  @@index([AccOrderId])
+}
+
+// use thies for workorder cloks
+model WorkOrderClockEntry {
+  id          Int       @id @default(autoincrement())
+  start       DateTime //
+  end         DateTime? //
+  userEmail   String //
+  username    String
+  workOrderId Int //
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  WorkOrder WorkOrder @relation(fields: [workOrderId], references: [workOrderId], onDelete: Cascade)
+
+  @@index([workOrderId])
+}
+
+model ServiceUnit {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  dealerId     String      @unique
+  price        String?
+  brand        String?
+  model        String?
+  color        String?
+  accessories  String?
+  options      String?
+  year         String?
+  vin          String?
+  trim         String?
+  mileage      String?
+  location     String?
+  condition    String?
+  repairs      String?
+  stockNum     String?
+  motor        String?
+  tag          String?
+  licensing    Boolean?
+  tradeEval    Boolean?
+  clientfileId String?
+  //
+  WorkOrder    WorkOrder[]
+  Clientfile   Clientfile? @relation(fields: [clientfileId], references: [id], onDelete: Cascade)
+
+  @@index([clientfileId])
+}
+
+model Comm {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  userEmail    String?
+  type         String?
+  body         String?
+  subject      String?
+  userName     String?
+  direction    String?
+  result       String?
+  ClientfileId String?
+  financeId    String?
+  //
+  Clientfile   Clientfile? @relation(fields: [ClientfileId], references: [id], onDelete: Cascade)
+  Finance      Finance?    @relation(fields: [financeId], references: [id], onDelete: Cascade)
+
+  @@index([ClientfileId])
+  @@index([financeId])
+}
+
+model FinanceProducts {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  desc         String?
+  packageName  String?
+  packagePrice Float?
+
+  FinanceDeptProducts FinanceDeptProducts[]
+}
+
+model FinanceDeptProducts {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  packagePrice      Float?
+  financeId         String?
+  financeProductsId String?
+  Finance           Finance?         @relation(fields: [financeId], references: [id])
+  FinanceProducts   FinanceProducts? @relation(fields: [financeProductsId], references: [id], onDelete: Cascade)
+
+  @@index([financeProductsId])
+  @@index([financeId])
+}
+
+model FinManOptions {
+  id                  String   @id @default(cuid())
+  finance             Finance? @relation("finance", fields: [financeId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  financeId           String?
+  email               String?
+  BEandTR             String?
+  intColor1           String?
+  licensingMan        String?
+  licensingManTr      String?
+  dts                 String?
+  verado              String?
+  motor               String?
+  sigPkgCruise        String?
+  biminiCr            String?
+  wallCol             String?
+  wallColCr           String?
+  colorCruise         String?
+  furnitureColor      String?
+  sigPkgExplore       String?
+  selPkgExplore       String?
+  tubesExplore        String?
+  colorExplore        String?
+  wallColorExplore    String?
+  sigPkgLX            String?
+  selRFXPkgLX         String?
+  selRFXWPkgLX        String?
+  blkPkg              String?
+  blkPkgLX            String?
+  wallGraphic         String?
+  colMatchedFiberLX   String?
+  powderCoatingLX     String?
+  blackAnoLX          String?
+  premiumJLLX         String?
+  JLTowerLX           String?
+  wallColorLX         String?
+  wallGraphicLX       String?
+  wallGraphicAccentLX String?
+  fibreGlassPodsLX    String?
+  powderCoatLX        String?
+  signature           String?
+  select              String?
+  tubeColor           String?
+  furnitureLX         String?
+  flooringLX          String?
+  blackoutPkgXT       String?
+  signaturePkgXT      String?
+  premAudioPkg        String?
+  XTPremiumcolor      String?
+  JLPremiumxt         String?
+  JlPremiumAudio      String?
+  fibreglassFrontXT   String?
+  WallGraphicXT       String?
+  powderCoatXT        String?
+  furnitureXT         String?
+  battery             String?
+  propeller           String?
+  gps                 String?
+  saltwaterPkg        String?
+  baseInst            String?
+  cupHolder           String?
+  multiHolder         String?
+  cooler13            String?
+  coolerExtension     String?
+  coolerBag14         String?
+  singleHolder        String?
+  stemwareHolder      String?
+  cargoBox10          String?
+  cargoBox20          String?
+  cargoBox30          String?
+  rodHolder           String?
+  batteryCharger      String?
+  bowFillerBench      String?
+  portAquaLounger     String?
+  skiTowMirror        String?
+  //
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([financeId])
+}
+
+model FinCanOptions {
+  id              String   @id @default(cuid())
+  financeId       String   @unique
+  Finance         Finance? @relation("finance", fields: [financeId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  baseInst        String?
+  cupHolder       String?
+  multiHolder     String?
+  cooler13        String?
+  stemwareHolder  String?
+  coolerExtension String?
+  coolerBag14     String?
+  singleHolder    String?
+  cargoBox10      String?
+  cargoBox20      String?
+  cargoBox30      String?
+  rodHolder       String?
+  batteryCharger  String?
+  bowFillerBench  String?
+  skiTowMirror    String?
+  portAquaLounger String?
+  Essentialkg     String?
+  ComfortPkg      String?
+  watersports     String?
+  familyBundle    String?
+  BatterySwitch   String?
+  familyBundleSW  String?
+  watersportsSW   String?
+  EssentialpkgSW  String?
+  ComfortPkgSW    String?
+  BRPAudio        String?
+  UltimateAudio   String?
+  BRPAudioL       String?
+  SunshadeSW      String?
+  ThermalInsert   String?
+  CargoTile       String?
+  VerticalSupport String?
+  BRPAudioRl0     String?
+  familyBundlesSP String?
+  watersportsSP   String?
+  ComfortPkgSP    String?
+  familyBundleCR  String?
+  ComfortPkgCR    String?
+  HeatedGrips     String?
+  TrailerLock     String?
+  //
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BmwMotoOptions {
+  id                  String   @id @default(cuid())
+  Finance             Finance? @relation("finance", fields: [financeId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  financeId           String   @unique
+  m1000rMPkg          String?
+  m1000rTitEx         String?
+  desOption           String?
+  m1000rrMPkg         String?
+  s1000rrRacePkg      String?
+  s1000rrRacePkg2     String?
+  f7gsConn            String?
+  f8gsDblSeat         String?
+  r12rtAudioSystem    String?
+  f9xrHandProtectors  String?
+  r12gsCrossGld       String?
+  r12gsSpSusp         String?
+  r12gsProtBar        String?
+  r12gsCrossBlk       String?
+  audioSystem         String?
+  highShield          String?
+  psgrKit             String?
+  alarm               String?
+  color               String?
+  chain               String?
+  comfortPkg          String?
+  touringPkg          String?
+  activePkg           String?
+  dynamicPkg          String?
+  offTire             String?
+  keyless             String?
+  headlightPro        String?
+  shiftAssPro         String?
+  tpc                 String?
+  cruise              String?
+  windshield          String?
+  handleBar           String?
+  extraHighSeat       String?
+  alumTank1           String?
+  alumTank2           String?
+  classicW            String?
+  silencer            String?
+  chromedExhaust      String?
+  crossW              String?
+  highSeat            String?
+  lowKitLowSeat       String?
+  lowSeat             String?
+  passengerKitLowSeat String?
+  comfortPsgrSeat     String?
+  mPsgrSeat           String?
+  // bmwoptions2
+  comfortSeat         String?
+  designW             String?
+  loweringKit         String?
+  forgedWheels        String?
+  carbonWheels        String?
+  centerStand         String?
+  billetPack1         String?
+  billetPack2         String?
+  heatedSeat          String?
+  lugRack             String?
+  lugRackBrackets     String?
+  chargeSocket        String?
+  auxLights           String?
+  mLightBat           String?
+  carbonPkg           String?
+  enduroPkg           String?
+  sportShield         String?
+  sportWheels         String?
+  sportSeat           String?
+  brownBench          String?
+  brownSeat           String?
+  handleRisers        String?
+  lgihtsPkg           String?
+  fogLights           String?
+  pilSeatCover        String?
+  lapTimer            String?
+  floorLight          String?
+  blackBench          String?
+  hillStart           String?
+  floorboards         String?
+  reverse             String?
+  forkTubeTrim        String?
+  spokedW             String?
+  lockGasCap          String?
+  aeroWheel           String?
+  psgrBench719        String?
+  blackS719           String?
+  aero719             String?
+  pinstripe           String?
+  designPkgBL         String?
+  benchseatlow        String?
+  iconWheel           String?
+  centreStand         String?
+  tubeHandle          String?
+  classicWheels       String?
+  blackContrastwheel  String?
+  silverContastWheel  String?
+  silverWheel         String?
+  activeCruise        String?
+  blackPowertrain     String?
+  blackWheel          String?
+  aeroPkg719          String?
+}
+
+//model BmwMotoOptions2 {
+// id                 String   @id @default(cuid())
+// finance            Finance? @relation("finance", fields: [financeId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+// financeId          String   @unique
+
+//}
+
+// -----------------------------------------------------------------------------
+// Models
+// -----------------------------------------------------------------------------
+model Canam {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  model1    String?
+  color     String?
+  modelCode String?
+  freight   String?
+  commodity String?
+  pdi       String?
+  msrp      String?
+}
+
+model Canamsxs {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  model1    String?
+  color     String?
+  modelCode String?
+  freight   String?
+  commodity String?
+  pdi       String?
+  msrp      String?
+}
+
+model Skidoo {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  model1    String?
+  color     String?
+  modelCode String?
+  freight   String?
+  commodity String?
+  pdi       String?
+  msrp      String?
+}
+
+model Switch {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  model1    String?
+  color     String?
+  modelCode String?
+  freight   String?
+  commodity String?
+  pdi       String?
+  msrp      String?
+}
+
+model Seadoo {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  model1    String?
+  color     String?
+  modelCode String?
+  freight   String?
+  commodity String?
+  pdi       String?
+  msrp      String?
+}
+
+model Spyder {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  model1    String?
+  color     String?
+  modelCode String?
+  freight   String?
+  commodity String?
+  pdi       String?
+  msrp      String?
+}
+
+model Suzuki {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  model1    String?
+  color     String?
+  modelCode String?
+  freight   String?
+  commodity String?
+  pdi       String?
+  msrp      String?
+}
+
+model Manitou {
+  id                       String @id @default(cuid())
+  model                    String @unique
+  length                   Int?
+  trailer                  Int?
+  boatEngineAndTrailerFees Int?
+  engineRigging            Int?
+  enginePreRigPrice        Int?
+  nmma                     Int?
+  engineFreight            Int?
+  msrp                     Int?
+}
+
+model Bmwmoto {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  color     String?
+  msrp      Int?
+  paintPrem Int?
+  brand     String?
+}
+
+model Triumph {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  color     String?
+  msrp      Int?
+  paintPrem Int?
+  brand     String?
+}
+
+model Kawasaki {
+  id        String  @id @default(cuid())
+  model     String  @unique
+  color     String?
+  msrp      Int?
+  paintPrem Int?
+  brand     String?
+}
+
+model Harley {
+  id    String  @id @default(cuid())
+  model String  @unique
+  color String?
+  msrp  Int?
+}
+
+model Harley24 {
+  id    String  @id @default(cuid())
+  model String  @unique
+  color String?
+  msrp  Int?
+}
+
+model Yamaha {
+  id    String  @id @default(cuid())
+  model String  @unique
+  color String?
+  msrp  Int?
+}
+
+model Ktm {
+  id    String  @id @default(cuid())
+  model String  @unique
+  color String?
+  msrp  Int?
+}
+
+model Indian {
+  id    String  @id @default(cuid())
+  model String  @unique
+  color String?
+  msrp  Int?
+}
+
+model my24canam {
+  id String @id @default(cuid())
+
+  model String  @unique
+  color String?
+  msrp  Int?
+  url   String?
+  spec  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

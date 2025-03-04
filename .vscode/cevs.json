@@ -1,0 +1,56 @@
+{
+  "apps/app/app/routes/portal/sales/$tab.tsx": {
+    "name": "sales/$tab",
+    "type": 1,
+    "location": "/"
+  },
+  "apps/app/app/routes/portal/sales/customer/$clientId/$financeId.tsx": {
+    "name": "sales/customer/$clientId/$financeId",
+    "type": 1,
+    "location": "/"
+  },
+  "apps/app/app/routes/portal/accessories/order.tsx": {
+    "name": "accessories/dashboard",
+    "type": 1
+  },
+  "apps/app/app/routes/portal/$dept/settings/general.tsx": {
+    "name": "admin/settings/dashboard",
+    "type": 1
+  },
+  "apps/app/app/routes/portal/service/dashboard.tsx": {
+    "name": "service/dashboard",
+    "type": 1
+  },
+  "apps/app/app/routes/portal/user/dashboard.settings.tsx": {
+    "name": "user/dashboard.settings",
+    "type": 1
+  },
+  "apps/app/app/utils/loader.server.ts": {
+    "name": "utils/loader.server",
+    "type": 1
+  },
+  "apps/app/.env": {
+    "name": ".env",
+    "type": 1
+  },
+  "apps/app/app/routes/portal/staff/leaderboard.tsx": {
+    "name": "staff/leaderboard",
+    "type": 1
+  },
+  "apps/app/app/components/ui/index.ts": {
+    "name": "components/ui/index",
+    "type": 1
+  },
+  "apps/app/.prettierConfigureJson.json": {
+    "name": ".prettierConfigureJson.json",
+    "type": 1
+  },
+  "meth/meth.json": {
+    "name": "meth turbo go brrrrrr",
+    "type": 1
+  },
+  ".schema/schema.prisma": {
+    "name": "schema.prisma",
+    "type": 1
+  }
+}
