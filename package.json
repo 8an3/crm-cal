@@ -1,7 +1,7 @@
 {
   "name": "cal",
   "description": "Demo of react-big-calendar using TypeScript and React hooks",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "type-check": "tsc --noEmit",
